@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chandoos — Scan Menu QR</title>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Poppins:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Poppins', system-ui, sans-serif;
+      background: #1a1a1a;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .card {
+      background: #0f0f0f;
+      border: 3px solid #f5a11d;
+      border-radius: 16px;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+      padding: 30px 26px 34px;
+    }
+    .brand {
+      font-family: 'Oswald', sans-serif;
+      color: #f5a11d;
+      font-size: 40px;
+      font-weight: 700;
+      letter-spacing: 4px;
+    }
+    .sub { font-style: italic; font-size: 18px; margin-bottom: 4px; }
+    .tag { color: #f5a11d; font-size: 14px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 22px; }
+    #qr {
+      background: #fff;
+      padding: 16px;
+      border-radius: 12px;
+      display: inline-block;
+      line-height: 0;
+    }
+    #qr canvas, #qr img { display: block; }
+    .scan { margin-top: 20px; font-family: 'Oswald', sans-serif; font-size: 20px; letter-spacing: 2px; }
+    .scan-sub { color: #b9b9b9; font-size: 13px; margin-top: 4px; }
+
+    .controls { margin-top: 24px; }
+    .controls label { display: block; font-size: 12px; color: #b9b9b9; margin-bottom: 6px; text-align: left; }
+    .controls input {
+      width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #333;
+      background: #1a1a1a; color: #fff; font-size: 14px;
+    }
+    .btns { display: flex; gap: 10px; margin-top: 14px; }
+    .btn {
+      flex: 1; padding: 12px; border: none; border-radius: 8px; cursor: pointer;
+      font-weight: 600; font-size: 14px; font-family: 'Poppins', sans-serif;
+    }
+    .btn-primary { background: #f5a11d; color: #111; }
+    .btn-ghost { background: #262626; color: #fff; border: 1px solid #3a3a3a; }
+    .phone { display:inline-block; background:#f5a11d; color:#111; font-weight:700; letter-spacing:2px; padding:6px 18px; border-radius:4px; margin-top:20px; }
+
+    @media print {
+      body { background: #fff; }
+      .controls, .btns { display: none; }
+      .card { border-color: #000; }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="brand">CHANDOOS</div>
+    <div class="sub">Restaurant &amp; Bakery</div>
+    <div class="tag">Scan for our Menu</div>
+
+    <div id="qr"></div>
+
+    <div class="scan">📷 SCAN ME</div>
+    <div class="scan-sub">Point your phone camera here to view the full menu</div>
+
+    <div class="phone">7777 800 600</div>
+
+    <div class="controls">
+      <label for="url">Menu URL (where you host the menu):</label>
+      <input id="url" type="text" value="" placeholder="https://your-site.com/index.html" />
+      <div class="btns">
+        <button class="btn btn-primary" id="gen">Update QR</button>
+        <button class="btn btn-ghost" id="print">Print</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR library (qrcode.js) -->
+  <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+  <script>
+    const qrBox = document.getElementById('qr');
+    const urlInput = document.getElementById('url');
+
+    // Default: use the menu page next to this file
+    const defaultUrl = new URL('index.html', location.href).href;
+    urlInput.value = defaultUrl;
+
+    let qr = null;
+    function render(text) {
+      qrBox.innerHTML = '';
+      qr = new QRCode(qrBox, {
+        text: text,
+        width: 240,
+        height: 240,
+        colorDark: '#111111',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
+      });
+    }
+
+    render(defaultUrl);
+
+    document.getElementById('gen').addEventListener('click', function () {
+      const v = urlInput.value.trim();
+      if (v) render(v);
+    });
+    document.getElementById('print').addEventListener('click', function () {
+      window.print();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chandoos — Menu Availability (Admin)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #16181c;
+      --panel: #20242b;
+      --panel-2: #262b33;
+      --orange: #f5a11d;
+      --green: #2fbf71;
+      --red: #e5484d;
+      --text: #eef1f5;
+      --muted: #9aa3af;
+      --border: #303743;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Poppins', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    header.top {
+      position: sticky; top: 0; z-index: 30;
+      background: #0f1113;
+      border-bottom: 2px solid var(--orange);
+      padding: 14px 18px;
+    }
+    .top-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; max-width: 900px; margin: 0 auto; }
+    .brand {
+      font-family: 'Oswald', sans-serif; color: var(--orange);
+      font-size: 24px; font-weight: 700; letter-spacing: 2px;
+    }
+    .brand small { display:block; font-size: 11px; letter-spacing: 1px; color: var(--muted); font-family: 'Poppins'; font-weight: 400; }
+    .spacer { flex: 1; }
+    .stat { font-size: 13px; color: var(--muted); }
+    .stat b { color: var(--green); }
+    .stat b.out { color: var(--red); }
+
+    .toolbar { max-width: 900px; margin: 14px auto 0; padding: 0 18px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .search { flex: 1; min-width: 200px; }
+    .search input {
+      width: 100%; padding: 11px 14px; border-radius: 10px;
+      border: 1px solid var(--border); background: var(--panel); color: var(--text); font-size: 14px;
+    }
+    .btn {
+      padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px; cursor: pointer;
+      background: var(--panel); color: var(--text); font-size: 13px; font-weight: 500; font-family: 'Poppins';
+    }
+    .btn:hover { background: var(--panel-2); }
+    .btn.warn { border-color: var(--red); color: #ff8b8e; }
+
+    main { max-width: 900px; margin: 16px auto 60px; padding: 0 18px; }
+
+    .cat { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 16px; overflow: hidden; }
+    .cat-head {
+      display: flex; align-items: center; gap: 10px;
+      padding: 13px 16px; background: var(--panel-2); border-bottom: 1px solid var(--border); flex-wrap: wrap;
+    }
+    .cat-head h2 { font-family: 'Oswald', sans-serif; color: var(--orange); font-size: 18px; letter-spacing: 1px; text-transform: uppercase; }
+    .cat-count { font-size: 12px; color: var(--muted); }
+    .cat-actions { display: flex; gap: 8px; }
+    .mini { font-size: 12px; padding: 6px 10px; }
+
+    .row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .row:last-child { border-bottom: none; }
+    .row .info { flex: 1; min-width: 0; }
+    .row .name { font-size: 15px; }
+    .row .price { font-size: 12px; color: var(--muted); }
+    .row.out .name { color: var(--muted); text-decoration: line-through; }
+
+    .state { font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; width: 74px; text-align: right; }
+    .state.on { color: var(--green); }
+    .state.off { color: var(--red); }
+
+    /* toggle switch */
+    .switch { position: relative; width: 50px; height: 28px; flex-shrink: 0; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; inset: 0; cursor: pointer; background: #4b5563;
+      border-radius: 999px; transition: 0.2s;
+    }
+    .slider::before {
+      content: ""; position: absolute; height: 22px; width: 22px; left: 3px; top: 3px;
+      background: #fff; border-radius: 50%; transition: 0.2s;
+    }
+    .switch input:checked + .slider { background: var(--green); }
+    .switch input:checked + .slider::before { transform: translateX(22px); }
+
+    .hidden { display: none !important; }
+    .empty { color: var(--muted); text-align: center; padding: 30px; }
+
+    .btn.add { background: var(--orange); color: #111; border-color: var(--orange); font-weight: 600; }
+
+    /* custom item marker + delete */
+    .tag-custom {
+      font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;
+      color: #111; background: var(--orange); padding: 2px 7px; border-radius: 8px; margin-left: 8px;
+    }
+    .del {
+      background: transparent; border: 1px solid var(--red); color: #ff8b8e;
+      border-radius: 8px; padding: 6px 9px; cursor: pointer; font-size: 12px;
+    }
+    .del:hover { background: rgba(229,72,77,0.15); }
+
+    /* modal */
+    .overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 50;
+      display: flex; align-items: center; justify-content: center; padding: 18px;
+    }
+    .modal {
+      background: var(--panel); border: 1px solid var(--border); border-radius: 16px;
+      width: 100%; max-width: 440px; padding: 22px;
+    }
+    .modal h3 { font-family: 'Oswald', sans-serif; color: var(--orange); font-size: 20px; letter-spacing: 1px; margin-bottom: 16px; }
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+    .field input, .field select {
+      width: 100%; padding: 11px 12px; border-radius: 10px; border: 1px solid var(--border);
+      background: var(--panel-2); color: var(--text); font-size: 14px; font-family: 'Poppins';
+    }
+    .field .two { display: flex; gap: 10px; }
+    .row-check { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+    .modal-btns { display: flex; gap: 10px; margin-top: 6px; }
+    .err { color: #ff8b8e; font-size: 12px; margin-bottom: 10px; min-height: 14px; }
+
+    .hint { max-width: 900px; margin: 0 auto 18px; padding: 0 18px; color: var(--muted); font-size: 12px; }
+    .hint a { color: var(--orange); }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="top-row">
+      <div class="brand">CHANDOOS <small>Menu Availability — Admin</small></div>
+      <div class="spacer"></div>
+      <div class="stat">Available: <b id="statOn">0</b> · Sold out: <b class="out" id="statOff">0</b></div>
+    </div>
+    <div class="toolbar">
+      <div class="search"><input id="search" type="text" placeholder="Search items…" /></div>
+      <button class="btn add" id="addItem">+ Add item</button>
+      <button class="btn" id="allOn">Enable all</button>
+      <button class="btn" id="allOff">Disable all</button>
+      <button class="btn warn" id="reset">Reset</button>
+    </div>
+  </header>
+
+  <p class="hint">Toggle items off when they run out — the customer menu will show them as <b>Sold Out</b>. Changes save instantly in this browser. View menu: <a href="index.html" target="_blank">index.html</a></p>
+
+  <main id="app"></main>
+
+  <!-- Add item modal -->
+  <div class="overlay hidden" id="overlay">
+    <div class="modal">
+      <h3>Add menu item</h3>
+      <div class="err" id="formErr"></div>
+      <div class="field">
+        <label for="fCat">Category</label>
+        <select id="fCat"></select>
+      </div>
+      <div class="field hidden" id="newCatWrap">
+        <label for="fNewCat">New category name</label>
+        <input id="fNewCat" type="text" placeholder="e.g. Combos" />
+      </div>
+      <div class="field">
+        <label for="fName">Item name</label>
+        <input id="fName" type="text" placeholder="e.g. Chicken Shawarma" />
+      </div>
+      <div class="row-check">
+        <input type="checkbox" id="fDual" />
+        <label for="fDual" style="margin:0">Two prices (e.g. Plain / Schezwan or 500g / 1KG)</label>
+      </div>
+      <div class="field">
+        <label id="priceLabel" for="fPrice1">Price (₹)</label>
+        <div class="two">
+          <input id="fPrice1" type="text" inputmode="numeric" placeholder="e.g. 180" />
+          <input id="fPrice2" class="hidden" type="text" inputmode="numeric" placeholder="second price" />
+        </div>
+      </div>
+      <div class="modal-btns">
+        <button class="btn add" id="saveItem" style="flex:1">Add item</button>
+        <button class="btn" id="cancelItem" style="flex:1">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="menu-data.js"></script>
+  <script src="availability.js"></script>
+  <script>
+    const app = document.getElementById('app');
+    const statOn = document.getElementById('statOn');
+    const statOff = document.getElementById('statOff');
+    let map = Availability.loadMap();
+    let menu = Availability.getMergedMenu(MENU);
+
+    function refreshMenu() { menu = Availability.getMergedMenu(MENU); }
+
+    function buildPriceLabel(price) {
+      return Array.isArray(price) ? price.join(' / ') : price;
+    }
+
+    function render() {
+      app.innerHTML = '';
+      menu.forEach(function (cat) {
+        const catEl = document.createElement('section');
+        catEl.className = 'cat';
+        catEl.dataset.cat = cat.title;
+
+        const head = document.createElement('div');
+        head.className = 'cat-head';
+        head.innerHTML =
+          '<h2>' + cat.title + '</h2>' +
+          '<span class="cat-count"></span>' +
+          '<span style="flex:1"></span>' +
+          '<div class="cat-actions">' +
+            '<button class="btn mini" data-act="on">All on</button>' +
+            '<button class="btn mini" data-act="off">All off</button>' +
+          '</div>';
+        catEl.appendChild(head);
+
+        cat.items.forEach(function (it) {
+          const id = Availability.itemId(cat.title, it.name);
+          const available = Availability.isAvailable(map, id);
+
+          const row = document.createElement('div');
+          row.className = 'row' + (available ? '' : ' out');
+          row.dataset.id = id;
+          row.dataset.search = (cat.title + ' ' + it.name).toLowerCase();
+
+          row.innerHTML =
+            '<div class="info">' +
+              '<div class="name">' + it.name + (it.custom ? '<span class="tag-custom">Custom</span>' : '') + '</div>' +
+              '<div class="price">₹ ' + buildPriceLabel(it.price) + '</div>' +
+            '</div>' +
+            (it.custom ? '<button class="del" title="Delete item">Delete</button>' : '') +
+            '<div class="state ' + (available ? 'on' : 'off') + '">' + (available ? 'Available' : 'Sold out') + '</div>' +
+            '<label class="switch">' +
+              '<input type="checkbox" ' + (available ? 'checked' : '') + ' />' +
+              '<span class="slider"></span>' +
+            '</label>';
+
+          const input = row.querySelector('input');
+          input.addEventListener('change', function () {
+            setItem(id, input.checked, row);
+          });
+
+          if (it.custom) {
+            row.querySelector('.del').addEventListener('click', function () {
+              if (confirm('Delete "' + it.name + '"?')) {
+                Availability.removeCustomItem(it.customId);
+                refreshMenu();
+                render();
+              }
+            });
+          }
+
+          catEl.appendChild(row);
+        });
+
+        // category bulk actions
+        head.querySelectorAll('[data-act]').forEach(function (b) {
+          b.addEventListener('click', function () {
+            const on = b.dataset.act === 'on';
+            cat.items.forEach(function (it) {
+              const id = Availability.itemId(cat.title, it.name);
+              Availability.setAvailable(map, id, on);
+            });
+            Availability.saveMap(map);
+            render();
+          });
+        });
+
+        app.appendChild(catEl);
+      });
+
+      updateCounts();
+      applySearch(document.getElementById('search').value);
+    }
+
+    function setItem(id, available, row) {
+      Availability.setAvailable(map, id, available);
+      Availability.saveMap(map);
+      row.classList.toggle('out', !available);
+      const state = row.querySelector('.state');
+      state.className = 'state ' + (available ? 'on' : 'off');
+      state.textContent = available ? 'Available' : 'Sold out';
+      updateCounts();
+    }
+
+    function updateCounts() {
+      let on = 0, off = 0, total = 0;
+      menu.forEach(function (cat) {
+        let cOn = 0;
+        cat.items.forEach(function (it) {
+          total++;
+          const id = Availability.itemId(cat.title, it.name);
+          if (Availability.isAvailable(map, id)) { on++; cOn++; } else { off++; }
+        });
+        const el = app.querySelector('[data-cat="' + cssEscape(cat.title) + '"] .cat-count');
+        if (el) el.textContent = cOn + ' / ' + cat.items.length + ' available';
+      });
+      statOn.textContent = on;
+      statOff.textContent = off;
+    }
+
+    function cssEscape(s) { return s.replace(/"/g, '\\"'); }
+
+    function applySearch(q) {
+      q = (q || '').trim().toLowerCase();
+      app.querySelectorAll('.cat').forEach(function (catEl) {
+        let visible = 0;
+        catEl.querySelectorAll('.row').forEach(function (row) {
+          const match = !q || row.dataset.search.indexOf(q) !== -1;
+          row.classList.toggle('hidden', !match);
+          if (match) visible++;
+        });
+        catEl.classList.toggle('hidden', visible === 0);
+      });
+    }
+
+    document.getElementById('search').addEventListener('input', function (e) {
+      applySearch(e.target.value);
+    });
+
+    document.getElementById('allOn').addEventListener('click', function () {
+      Availability.resetAll();
+      map = {};
+      render();
+    });
+    document.getElementById('allOff').addEventListener('click', function () {
+      menu.forEach(function (cat) {
+        cat.items.forEach(function (it) {
+          Availability.setAvailable(map, Availability.itemId(cat.title, it.name), false);
+        });
+      });
+      Availability.saveMap(map);
+      render();
+    });
+    document.getElementById('reset').addEventListener('click', function () {
+      if (confirm('Reset all items to Available?')) {
+        Availability.resetAll();
+        map = {};
+        render();
+      }
+    });
+
+    /* ---------------- Add item modal ---------------- */
+    const overlay = document.getElementById('overlay');
+    const fCat = document.getElementById('fCat');
+    const newCatWrap = document.getElementById('newCatWrap');
+    const fNewCat = document.getElementById('fNewCat');
+    const fName = document.getElementById('fName');
+    const fDual = document.getElementById('fDual');
+    const fPrice1 = document.getElementById('fPrice1');
+    const fPrice2 = document.getElementById('fPrice2');
+    const priceLabel = document.getElementById('priceLabel');
+    const formErr = document.getElementById('formErr');
+
+    const NEW_CAT_VALUE = '__new__';
+
+    function openModal() {
+      // populate categories from current merged menu + a "New category" option
+      fCat.innerHTML = '';
+      menu.forEach(function (cat) {
+        const o = document.createElement('option');
+        o.value = cat.title; o.textContent = cat.title;
+        fCat.appendChild(o);
+      });
+      const o = document.createElement('option');
+      o.value = NEW_CAT_VALUE; o.textContent = '+ New category…';
+      fCat.appendChild(o);
+
+      newCatWrap.classList.add('hidden');
+      fNewCat.value = '';
+      fName.value = '';
+      fPrice1.value = '';
+      fPrice2.value = '';
+      fDual.checked = false;
+      fPrice2.classList.add('hidden');
+      priceLabel.textContent = 'Price (₹)';
+      formErr.textContent = '';
+      overlay.classList.remove('hidden');
+      fName.focus();
+    }
+    function closeModal() { overlay.classList.add('hidden'); }
+
+    document.getElementById('addItem').addEventListener('click', openModal);
+    document.getElementById('cancelItem').addEventListener('click', closeModal);
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) closeModal(); });
+
+    fCat.addEventListener('change', function () {
+      newCatWrap.classList.toggle('hidden', fCat.value !== NEW_CAT_VALUE);
+      if (fCat.value === NEW_CAT_VALUE) fNewCat.focus();
+    });
+
+    fDual.addEventListener('change', function () {
+      fPrice2.classList.toggle('hidden', !fDual.checked);
+      priceLabel.textContent = fDual.checked ? 'Prices (₹) — first / second' : 'Price (₹)';
+    });
+
+    document.getElementById('saveItem').addEventListener('click', function () {
+      formErr.textContent = '';
+      let category = fCat.value === NEW_CAT_VALUE ? fNewCat.value.trim() : fCat.value;
+      const name = fName.value.trim();
+      const p1 = fPrice1.value.trim();
+      const p2 = fPrice2.value.trim();
+
+      if (!category) { formErr.textContent = 'Please enter a category name.'; return; }
+      if (!name) { formErr.textContent = 'Please enter an item name.'; return; }
+      if (!p1) { formErr.textContent = 'Please enter a price.'; return; }
+      if (fDual.checked && !p2) { formErr.textContent = 'Please enter the second price.'; return; }
+
+      const price = fDual.checked ? [p1, p2] : p1;
+      Availability.addCustomItem(category, name, price);
+      refreshMenu();
+      render();
+      closeModal();
+    });
+
+    render();
+  </script>
+</body>
+</html>
