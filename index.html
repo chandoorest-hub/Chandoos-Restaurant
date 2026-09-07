@@ -285,21 +285,23 @@
     </footer>
   </div>
 
+  <!-- Firebase (real-time cross-device sync). Falls back to local cache if not configured. -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
   <script src="menu-data.js"></script>
   <script src="availability.js"></script>
   <script>
     (function () {
       const menuEl = document.getElementById('menu');
       const navEl = document.getElementById('nav');
-      let availMap = Availability.loadMap();
-      let customSig = '';
+      let customSig = null;
 
       function slug(s) {
         return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
       }
 
       function buildMenu() {
-        availMap = Availability.loadMap();
         customSig = JSON.stringify(Availability.loadCustom());
         const menu = Availability.getMergedMenu(MENU);
 
@@ -332,7 +334,7 @@
           cat.items.forEach(function (it) {
             const multi = Array.isArray(it.price);
             const itemId = Availability.itemId(cat.title, it.name);
-            const available = Availability.isAvailable(availMap, itemId);
+            const available = Availability.isAvailable(itemId);
             html += '<li class="item' + (multi ? ' multi' : '') + (available ? '' : ' soldout') + '" data-id="' + itemId + '">';
             html += '<span class="name"><span class="name-text">' + it.name + '</span>' +
                     '<span class="soldout-badge"' + (available ? ' style="display:none"' : '') + '>Sold Out</span>' +
@@ -357,40 +359,23 @@
 
       // Light update: just toggle sold-out state on existing rows.
       function applyAvailability() {
-        availMap = Availability.loadMap();
         menuEl.querySelectorAll('.item[data-id]').forEach(function (li) {
-          const available = Availability.isAvailable(availMap, li.dataset.id);
+          const available = Availability.isAvailable(li.dataset.id);
           li.classList.toggle('soldout', !available);
           const badge = li.querySelector('.soldout-badge');
           if (badge) badge.style.display = available ? 'none' : '';
         });
       }
 
-      // Full rebuild only if custom items changed, else just refresh availability.
+      // Called on first load AND on every remote change (via Firebase listener).
       function sync() {
         const sig = JSON.stringify(Availability.loadCustom());
-        if (sig !== customSig) {
-          buildMenu();
-        } else {
-          applyAvailability();
-        }
+        if (sig !== customSig) buildMenu();   // items added/removed -> full rebuild
+        else applyAvailability();             // only sold-out state changed
       }
 
-      // Initial render
-      buildMenu();
-
-      // 1) Instant update when admin (or another tab) changes data.
-      window.addEventListener('storage', function (e) {
-        if (e.key === Availability.STORAGE_KEY || e.key === Availability.CUSTOM_KEY) sync();
-      });
-
-      // 2) Re-check when the customer returns to this tab.
-      document.addEventListener('visibilitychange', function () {
-        if (!document.hidden) sync();
-      });
-
-      // 3) Safety net: poll periodically in case of same-tab edits.
-      setInterval(sync, 5000);
+      // Subscribe to shared state. sync() runs on load and on every device update.
+      Availability.init(sync);
     })();
   </script>
 </body>
