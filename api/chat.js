@@ -6,7 +6,9 @@
    We build a system prompt that restricts the assistant to the menu only. */
 
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const MODEL = 'llama-3.1-8b-instant'; // fast + cheap; good for menu Q&A
+// Groq model. llama-3.1-8b-instant was deprecated (mid-2026); using a current model.
+// Override without a code change by setting the GROQ_MODEL env var in Vercel.
+const MODEL = process.env.GROQ_MODEL || 'openai/gpt-oss-20b';
 
 function buildMenuText(menu) {
   if (!Array.isArray(menu)) return '(no menu provided)';
@@ -90,6 +92,7 @@ module.exports = async function handler(req, res) {
 
     if (!groqRes.ok) {
       const detail = await groqRes.text();
+      console.error('Groq error', groqRes.status, 'model=', MODEL, detail);
       res.status(502).json({ error: 'Assistant unavailable. Please try again.', detail: detail.slice(0, 300) });
       return;
     }
