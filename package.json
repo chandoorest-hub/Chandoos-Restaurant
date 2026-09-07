@@ -1,0 +1,9 @@
+{
+  "name": "chandoos-qr-menu",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Chandoos Restaurant & Bakery digital QR menu with admin availability and a menu-only AI assistant.",
+  "engines": {
+    "node": ">=18"
+  }
+}
