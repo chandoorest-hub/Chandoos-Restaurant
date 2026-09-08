@@ -65,6 +65,7 @@ module.exports = async function handler(req, res) {
       "If a question is NOT about this restaurant's menu, food, prices, or availability, politely refuse " +
       "with one short sentence like: \"I can only help with the Chandoos menu.\" " +
       "Do not invent items or prices that are not in the menu. Keep answers short, friendly, and clear. " +
+      "When listing a category, list at most 12 items; if there are more, show the first 12 and say how many more there are. " +
       "Restaurant phone: 7777 800 600. Catering and party orders are undertaken.\n\n" +
       "=== MENU ===\n" + menuText;
 
